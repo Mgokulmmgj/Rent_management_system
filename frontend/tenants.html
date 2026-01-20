@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tenant Management</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial;
+    background:#f4f6f8;
+}
+.header{
+    background:#6c7cff;
+    color:white;
+    padding:20px;
+    text-align:center;
+    font-size:24px;
+}
+.container{
+    padding:20px;
+}
+.form-box{
+    background:white;
+    padding:15px;
+    border-radius:8px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+.form-box input{
+    padding:8px;
+    width:160px;
+}
+.form-box button{
+    padding:8px 15px;
+    background:#6c7cff;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+table{
+    width:100%;
+    margin-top:20px;
+    background:white;
+    border-collapse:collapse;
+}
+th, td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+}
+.delete{
+    background:red;
+    color:white;
+    border:none;
+    padding:5px 10px;
+    border-radius:4px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Tenant Management</div>
+
+<div class="container">
+
+<div class="form-box">
+    <input type="text" id="name" placeholder="Tenant Name">
+    <input type="text" id="room" placeholder="Room No">
+    <input type="number" id="rent" placeholder="Rent">
+    <input type="text" id="status" placeholder="Status">
+    <button onclick="addTenant()">Add Tenant</button>
+</div>
+
+<table>
+<thead>
+<tr>
+    <th>Name</th>
+    <th>Room</th>
+    <th>Rent</th>
+    <th>Status</th>
+    <th>Action</th>
+</tr>
+</thead>
+<tbody id="tenantData"></tbody>
+</table>
+
+</div>
+
+<script>
+function loadTenants() {
+  fetch("http://localhost:3000/api/tenants")
+    .then(res => res.json())
+    .then(data => {
+      let rows = "";
+      data.forEach(t => {
+        rows += `
+          <tr>
+            <td>${t.name}</td>
+            <td>${t.room_no}</td>
+            <td>${t.rent}</td>
+            <td>${t.status}</td>
+            <td>
+              <button class="delete" onclick="deleteTenant(${t.id})">Delete</button>
+            </td>
+          </tr>`;
+      });
+      document.getElementById("tenantData").innerHTML = rows;
+    });
+}
+
+function addTenant() {
+  const name = document.getElementById("name").value;
+  const room = document.getElementById("room").value;
+  const rent = document.getElementById("rent").value;
+  const status = document.getElementById("status").value;
+
+  fetch("http://localhost:3000/api/tenants", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      name: name,
+      room_no: room,
+      rent: rent,
+      status: status
+    })
+  })
+  .then(() => {
+    document.getElementById("name").value = "";
+    document.getElementById("room").value = "";
+    document.getElementById("rent").value = "";
+    document.getElementById("status").value = "";
+    loadTenants();
+  });
+}
+
+function deleteTenant(id) {
+  fetch(`http://localhost:3000/api/tenants/${id}`, {
+    method: "DELETE"
+  }).then(loadTenants);
+}
+
+loadTenants();
+</script>
+
+</body>
+</html>
